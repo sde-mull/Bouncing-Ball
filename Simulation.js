@@ -14,7 +14,7 @@ class Simulation {
 		this.rightWall = new Wall(Room.width - Room.wallWidth, 0, Room.height, Room.wallWidth, Room.wallColor);
 		this.floor = new Wall(0, Room.height - Room.wallWidth, Room.wallHeight, Room.width, Room.wallColor);
 
-		this.ball = new Ball(300, 55, 25, "orange");
+		this.ball = new Ball(300, 55, 50, "orange");
 
 		this.update = this.update.bind(this);
 
@@ -25,6 +25,10 @@ class Simulation {
 		requestAnimationFrame(this.update);
 		const canvasElement = this.canvas.getCanvas();
 
+		let draggingBall = null;
+		let offsetX = 0;
+    	let offsetY = 0;
+
 		canvasElement.addEventListener("mousedown", (e) => {
 			const rect = canvasElement.getBoundingClientRect();
 			const mouseX = e.clientX - rect.left;
@@ -32,6 +36,7 @@ class Simulation {
 		
 	
 			if (this.ball.isPointInside(mouseX, mouseY)) {
+				draggingBall = this.ball;
 				this.ball.startDrag(mouseX, mouseY);
 			}
 
@@ -45,16 +50,32 @@ class Simulation {
 			
 			if (this.ball.isPointInside(mouseX, mouseY)) {
 				canvasElement.style.cursor = "pointer";
+				if (draggingBall) {
+					draggingBall.x = mouseX - offsetX;
+            		draggingBall.y = mouseY - offsetY;
+					draggingBall.drag(mouseX, mouseY);
+				}
 			} else {
 				canvasElement.style.cursor = "default";
 			}
-				this.ball.drag(mouseX, mouseY);
 		});
 		
 		canvasElement.addEventListener("mouseup", () => {
-			this.ball.stopDrag();
+			if (draggingBall) {
+				draggingBall.stopDrag();
+				draggingBall = null;
+			}
+		});
+
+		canvasElement.addEventListener("mouseleave", () => {
+			if (draggingBall) {
+				draggingBall.stopDrag();
+				draggingBall = null;
+			}
 		});
 	}
+
+	
 
 	draw(){
 		this.canvas.clearCanvas();
